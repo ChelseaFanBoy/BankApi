@@ -1,5 +1,6 @@
 ﻿using BankApi.Models;
 using BankApi.Services;
+using BankApi.Services.Interfaces;
 
 namespace BankApi
 {
@@ -17,13 +18,13 @@ namespace BankApi
         {
             services.AddControllers().AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = 
+                System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             });
             services.Configure<BankDatabaseSettings>(Configuration.GetSection("BankDatabase"));
 
-            services.AddSingleton<BankService>();
+            services.AddScoped<IBankService, BankService>();
 
-            //services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
