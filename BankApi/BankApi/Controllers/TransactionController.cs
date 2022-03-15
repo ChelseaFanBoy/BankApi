@@ -1,5 +1,5 @@
 ﻿using BankApi.Models;
-using BankApi.Services;
+using BankApi.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +9,9 @@ namespace BankApi.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
-        private readonly BankService _bankService;
+        private readonly IBankService _bankService;
 
-        public TransactionController(BankService bankService) =>
+        public TransactionController(IBankService bankService) =>
         _bankService = bankService;
 
         /// <summary>

@@ -1,10 +1,11 @@
 using BankApi.Models;
+using BankApi.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace BankApi.Services
 {
-    public class BankService
+    public class BankService : IBankService
     {
         private readonly IMongoCollection<Customer> _customerCollection;
 
