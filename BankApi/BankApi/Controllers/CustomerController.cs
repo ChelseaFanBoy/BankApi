@@ -1,6 +1,5 @@
 ﻿using BankApi.Models;
 using BankApi.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApi.Controllers
@@ -48,9 +47,33 @@ namespace BankApi.Controllers
         [HttpPost("AddNewCustomer")]
         public async Task<IActionResult> AddNewCustomer(Customer customer)
         {
+            //Create new Guid for inserting into mongoDB
+            customer.Id = Guid.NewGuid().ToString();
+            //CustomerID is next number of latest customer's ID
+            var lastCustomer = _bankService.GetAsync().Result.OrderByDescending(x=>x.CustomerID).FirstOrDefault();
+            customer.CustomerID = lastCustomer is null ? 1 : ++lastCustomer.CustomerID;
+
+            SetAccountDetails(ref customer);
+
             await _bankService.CreateAsync(customer);
 
             return CreatedAtAction(nameof(GetAllCustomerDetails), new { id = customer.CustomerID }, customer);
+        }
+
+        private static void SetAccountDetails(ref Customer customer)
+        {
+            foreach(var account in customer.Accounts)
+            {
+                foreach (var transaction in account.Transactions)
+                {
+                    if (transaction.TransactionType == Models.Enums.TransactionType.Credit)
+                        account.CurrentBalance += transaction.Amount;
+                    else if(transaction.TransactionType == Models.Enums.TransactionType.Debit)
+                        account.CurrentBalance -= transaction.Amount;
+                }
+                var lastTransaction = account.Transactions.OrderByDescending(x => x.TransactionTime).First();
+                account.LastTransaction = lastTransaction.TransactionType;
+            }
         }
     }
 }

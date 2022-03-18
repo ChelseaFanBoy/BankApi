@@ -1,6 +1,5 @@
 ﻿using BankApi.Models;
 using BankApi.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankApi.Controllers
@@ -22,7 +21,10 @@ namespace BankApi.Controllers
         /// <param name="transaction"></param>
         /// <returns></returns>
         [HttpPut("PerformTransaction")]
-        public async Task<IActionResult> PerformTransaction(int customerId, int accountNumber, Transaction transaction)
+        public async Task<IActionResult> PerformTransaction(
+            int customerId, 
+            int accountNumber, 
+            Transaction transaction)
         {
             var customer = await _bankService.GetAsync(customerId);
 
@@ -42,7 +44,10 @@ namespace BankApi.Controllers
             account.Transactions.Add(transaction);
             account.LastTransaction = transaction.TransactionType;
             account.LastTransactionTime = transaction.TransactionTime;
-            account.CurrentBalance += transaction.Amount;
+            if (transaction.TransactionType == Models.Enums.TransactionType.Debit)
+                account.CurrentBalance -= transaction.Amount;
+            else if(transaction.TransactionType == Models.Enums.TransactionType.Credit)
+                account.CurrentBalance += transaction.Amount;
 
             customer.Accounts[index] = account;
 
