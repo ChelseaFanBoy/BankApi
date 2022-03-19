@@ -9,10 +9,16 @@ namespace BankApi.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly IBankService _bankService;
+        private readonly ILogger<TransactionController> _logger;
+        private readonly string UserName = Environment.UserName;
 
-        public TransactionController(IBankService bankService) =>
-        _bankService = bankService;
+        public string? Message { get; set; }
 
+        public TransactionController(IBankService bankService, ILogger<TransactionController> logger)
+        {
+            _bankService = bankService;
+            _logger = logger;
+        }
         /// <summary>
         /// Performs a transaction against a particular customerId and accountNumber
         /// </summary>
@@ -26,6 +32,7 @@ namespace BankApi.Controllers
             int accountNumber, 
             Transaction transaction)
         {
+            LogUserNameTimeInfo(nameof(PerformTransaction));
             var customer = await _bankService.GetAsync(customerId);
 
             if (customer is null)
@@ -64,9 +71,12 @@ namespace BankApi.Controllers
         /// <param name="endTime"></param>
         /// <returns></returns>
         [HttpGet("GetTransactionDetails")]
-        public async Task<List<Transaction>> GetTransactionDetails(int customerId,
-                                                                            DateTime startTime, DateTime endTime)
+        public async Task<List<Transaction>> GetTransactionDetails(
+            int customerId,
+            DateTime startTime, 
+            DateTime endTime)
         {
+            LogUserNameTimeInfo(nameof(GetTransactionDetails));
             var customer = await _bankService.GetAsync(customerId);
 
             if (customer is null)
@@ -84,6 +94,12 @@ namespace BankApi.Controllers
             }
 
             return transaction;
+        }
+
+        private void LogUserNameTimeInfo(string methodName)
+        {
+            Message = $"{UserName} visited {methodName} at {DateTime.UtcNow}";
+            _logger.LogInformation("{message}", Message);
         }
     }
 }

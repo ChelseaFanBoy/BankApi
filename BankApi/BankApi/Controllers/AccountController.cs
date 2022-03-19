@@ -9,9 +9,16 @@ namespace BankApi.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IBankService _bankService;
+        private readonly ILogger<AccountController> _logger;
+        private readonly string UserName = Environment.UserName;
 
-        public AccountController(IBankService bankService) =>
-        _bankService = bankService;
+        public string? Message { get; set; }
+
+        public AccountController(IBankService bankService, ILogger<AccountController> logger)
+        {
+            _bankService = bankService;
+            _logger = logger;
+        }
 
         /// <summary>
         /// EndPoint to add a new account to existing customer
@@ -22,6 +29,7 @@ namespace BankApi.Controllers
         [HttpPut("AddAccount")]
         public async Task<IActionResult> AddAccount(int customerId, Account accountDetails)
         {
+            LogUserNameTimeInfo(nameof(AddAccount));
             var customer = await _bankService.GetAsync(customerId);
 
             if (customer is null)
@@ -58,6 +66,12 @@ namespace BankApi.Controllers
             }
             var lastTransaction = account.Transactions.OrderByDescending(x => x.TransactionTime).First();
             account.LastTransaction = lastTransaction.TransactionType;
+        }
+
+        private void LogUserNameTimeInfo(string methodName)
+        {
+            Message = $"{UserName} visited {methodName} at {DateTime.UtcNow}";
+            _logger.LogInformation("{message}", Message);
         }
     }
 }
