@@ -1,6 +1,7 @@
 ﻿using BankApi.Models;
 using BankApi.Services;
 using BankApi.Services.Interfaces;
+using Microsoft.AspNetCore.HttpLogging;
 
 namespace BankApi
 {
@@ -16,6 +17,12 @@ namespace BankApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpLogging(httpLogging =>
+            {
+                httpLogging.LoggingFields = HttpLoggingFields.All;
+                httpLogging.MediaTypeOptions.
+                AddText("application/json");
+            });
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = 
@@ -28,36 +35,6 @@ namespace BankApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-            /*
-            services.AddApiVersioning(x =>
-            {
-                x.DefaultApiVersion = new ApiVersion(1, 0);
-                x.AssumeDefaultVersionWhenUnspecified = true;
-                x.ReportApiVersions = true;
-            });
-
-            // configure strongly typed TokenOptions object
-            var tokenOptionsSection = Configuration.GetSection(nameof(TokenOptions));
-            var tokenOptions = tokenOptionsSection.Get<TokenOptions>();
-            services.Configure<TokenOptions>(tokenOptionsSection);
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = tokenOptions?.Issuer,
-                        ValidAudience = tokenOptions?.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions?.SecurityKey ?? string.Empty))
-                    };
-                });
-
-            // AutoMapper
-            services.AddAutoMapper(GetType().Assembly);*/
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -69,7 +46,7 @@ namespace BankApi
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseHttpLogging();
             app.UseRouting();
 
             // global cors policy
